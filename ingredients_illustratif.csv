@@ -1,0 +1,45 @@
+﻿Ingredient,Brand,Category,ABV,Bottle_cl,Price_EUR_illustr,Premium
+Absolut Vodka,Absolut,vodka,40,70,15,0
+Absolut Citron,Absolut,vodka,40,70,16,0
+Beefeater London Dry,Beefeater,gin,40,70,14,0
+Plymouth Gin,Plymouth,gin,41.2,70,24,1
+Monkey 47,Monkey 47,gin,47,50,33,1
+Malfy Gin Con Limone,Malfy,gin,41,70,22,1
+Havana Club 3 Años,Havana Club,rum,40,70,13,0
+Havana Club 7 Años,Havana Club,rum,40,70,22,1
+Malibu,Malibu,rum,21,70,12,0
+Jameson,Jameson,whiskey,40,70,18,0
+Chivas Regal 12,Chivas Regal,whisky,40,70,25,1
+The Glenlivet 12,The Glenlivet,whisky,40,70,28,1
+Martell VS,Martell,cognac,40,70,28,1
+Olmeca Altos Plata,Olmeca Altos,tequila,38,70,22,0
+Ricard,Ricard,anise,45,100,18,0
+Lillet Blanc,Lillet,aperitif,17,75,13,0
+Suze,Suze,aperitif,15,100,14,0
+Italicus,Italicus,aperitif,20,70,25,1
+Ramazzotti Aperitivo Rosato,Ramazzotti,aperitif,15,70,14,0
+Mumm Cordon Rouge,Mumm,champagne,12,75,28,1
+tonic,,mixer,0,20,0.6,0
+soda,,mixer,0,100,0.8,0
+ginger beer,,mixer,0,20,0.7,0
+ginger ale,,mixer,0,20,0.6,0
+cola,,mixer,0,33,0.5,0
+grapefruit soda,,mixer,0,25,0.7,0
+cranberry juice,,juice,0,100,2.5,0
+pineapple juice,,juice,0,100,2.2,0
+lime juice,,juice,0,100,4.0,0
+lemon juice,,juice,0,100,3.5,0
+coconut cream,,juice,0,40,2.4,0
+espresso,,juice,0,3,0.25,0
+hot coffee,,juice,0,12,0.3,0
+cream,,juice,0,50,2.5,0
+water,,mixer,0,100,0,0
+sugar syrup,,syrup,0,70,3.5,0
+orgeat syrup,,syrup,0,70,6,0
+grenadine syrup,,syrup,0,70,5,0
+honey-ginger syrup,,syrup,0,70,6,0
+rosemary syrup,,syrup,0,70,6,0
+triple sec,,liqueur,30,70,11,0
+crème de cassis,,liqueur,15,70,10,0
+aromatic bitters,,liqueur,44,20,12,0
+aquafaba,,juice,0,100,0.5,0

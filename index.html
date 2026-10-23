@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>La Carte · cocktail-menu assistant</title>
+<meta name="description" content="Assistant qui compose la carte cocktails d'un bar à partir du portefeuille Pernod Ricard : prix, pour cost, marge, commande hebdomadaire. Prototype étudiant indépendant.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23123F75'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='700' font-size='28' fill='white' text-anchor='middle'%3ELC%3C/text%3E%3C/svg%3E">
+<style>
+@property --n {syntax:'<integer>';initial-value:0;inherits:false}
+@keyframes lcUp {from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes lcGrow {from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes lcCount {from{--n:0}to{--n:var(--to)}}
+@keyframes lcDot {0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-5px);opacity:1}}
+@keyframes lcSheen {from{background-position:0% 0}to{background-position:200% 0}}
+.lc {font-family:Barlow,'Helvetica Neue',Arial,sans-serif;color:#14213D;font-size:14px;line-height:1.45}
+.lc .cond {font-family:'Barlow Condensed',Barlow,'Arial Narrow',sans-serif}
+.lc .cap {text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:600}
+.lc .new {animation:lcUp .45s ease both}
+.lc .new .row {opacity:0;animation:lcUp .5s ease forwards;animation-delay:calc(var(--i) * 110ms + 150ms)}
+.lc .new .lead {transform-origin:left;transform:scaleX(0);animation:lcGrow .6s ease forwards;animation-delay:calc(var(--i) * 110ms + 350ms)}
+.lc .new .kpi {opacity:0;animation:lcUp .5s ease forwards;animation-delay:calc(var(--i) * 140ms + var(--base, 1000ms))}
+.lc .new .bar {transform-origin:left;transform:scaleX(0);animation:lcGrow .9s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i) * 90ms + var(--base, 1300ms))}
+.lc .count {counter-reset:n var(--to)}
+.lc .new .count {animation:lcCount 1.4s ease-out forwards;animation-delay:var(--base, 1000ms);counter-reset:n var(--n)}
+.lc .count::after {content:counter(n)}
+.lc .dots span {display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:#123F75;animation:lcDot 1s infinite}
+.lc .dots span:nth-child(2) {animation-delay:.15s} .lc .dots span:nth-child(3) {animation-delay:.3s}
+.lc-head {background:linear-gradient(110deg,#123F75 0%,#0B2A52 45%,#1B4F8C 50%,#0B2A52 55%,#123F75 100%) !important;background-size:200% 100% !important;
+  animation:lcSheen 9s linear infinite;border-radius:14px 14px 0 0}
+.lc-chip button, button.lc-chip {font-family:Barlow,sans-serif !important;font-weight:600 !important;font-size:12.5px !important;background:#FFFFFF !important;
+  color:#123F75 !important;border:1px solid #76A0CD !important;border-radius:999px !important;margin:4px 6px 4px 0 !important}
+button.lc-send {font-family:Barlow,sans-serif !important;font-weight:700 !important;color:#FFFFFF !important;border-radius:10px !important}
+.lc-input input {font-family:Barlow,sans-serif !important;border-radius:10px !important;border:1px solid #76A0CD !important;padding:0 12px !important;font-size:14px !important}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:linear-gradient(160deg,#0B2A52 0%,#123F75 55%,#1E4F86 100%);font-family:Barlow,'Helvetica Neue',Arial,sans-serif;color:#14213D;display:flex;flex-direction:column;align-items:center}
+#app{width:min(860px,100% - 32px);margin:24px 16px 10px;flex:1;min-height:0;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:#EEF3F9;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.head{display:flex;align-items:center;gap:14px;padding:14px 18px}
+.head .t{flex:1;min-width:0} .head h1{margin:0;font-size:24px;color:#fff;font-weight:700;line-height:1.1} .head p{margin:0;color:#B9CDE6;font-size:13px}
+.badge{width:46px;height:46px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.proto{color:#fff;border:1px solid #76A0CD;border-radius:999px;padding:3px 10px;font-size:10px}
+#log{flex:1;overflow-y:auto;padding:0 18px;min-height:0}
+.msg-u{display:flex;justify-content:flex-end;margin:14px 0} .msg-u>div{background:#123F75;color:#fff;padding:10px 15px;border-radius:14px 14px 4px 14px;max-width:80%;font-weight:500}
+.msg-b{display:flex;align-items:flex-start;margin:14px 0} .msg-b>.card{background:#fff;padding:14px 18px;border-radius:4px 14px 14px 14px;max-width:calc(100% - 42px);border:1px solid #DCE5F0;box-shadow:0 6px 18px rgba(18,63,117,.08);min-width:0}
+.av{width:32px;min-width:32px;height:32px;border-radius:50%;background:#123F75;color:#fff;display:flex;align-items:center;justify-content:center;margin:2px 10px 0 0;font-weight:700;font-size:13px}
+#chips{display:flex;gap:6px;overflow-x:auto;padding:10px 14px 4px;background:#fff;border-top:1px solid #DCE5F0;scrollbar-width:thin}
+.chip{font-family:inherit;font-weight:600;font-size:12.5px;background:#fff;color:#123F75;border:1px solid #76A0CD;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;transition:background .15s,transform .1s}
+.chip:hover{background:#EEF3F9} .chip:active{transform:scale(.96)}
+form{display:flex;gap:8px;padding:8px 14px 14px;background:#fff}
+#q{flex:1;min-width:0;font:inherit;font-size:15px;border:1px solid #76A0CD;border-radius:10px;padding:10px 12px;outline:none;color:#14213D}
+#q:focus{border-color:#123F75;box-shadow:0 0 0 3px rgba(118,160,205,.35)}
+#go{font:inherit;font-weight:700;background:#123F75;color:#fff;border:0;border-radius:10px;padding:0 18px;cursor:pointer;transition:transform .1s,background .15s}
+#go:hover{background:#0B2A52} #go:active{transform:scale(.96)}
+footer{color:#B9CDE6;font-size:12px;text-align:center;padding:4px 16px 16px;max-width:860px;line-height:1.5}
+footer a{color:#fff}
+@media (max-width:600px){ .head p{display:none} .proto{display:none} .stk-n{width:120px !important} #app{margin:12px 16px 8px} #go{padding:0 12px} }
+@media (prefers-reduced-motion:reduce){ .lc *{animation:none !important} .lc .new .row,.lc .new .kpi{opacity:1} .lc .new .lead,.lc .new .bar{transform:none} }
+</style></head>
+<body>
+<div id="app" class="lc">
+  <div class="head lc-head"><div class="badge"><span class="cond" style="font-weight:700;font-size:22px;color:#123F75">LC</span></div>
+    <div class="t"><h1>La Carte</h1><p>Assistant carte cocktails · on-trade · FR / EN</p></div><span class="cap proto">Prototype</span></div>
+  <div id="log"><div id="inner"></div><div style="height:10px"></div></div>
+  <div id="chips"><button class="chip" data-q="Bar à cocktails à Lyon, 8 cocktails, prix max 12 €, été, 250 cocktails par semaine">Bar à cocktails</button><button class="chip" data-q="Rooftop haut de gamme, été, 8 cocktails">Rooftop haut de gamme</button><button class="chip" data-q="Brasserie, apéro français, service rapide, 6 cocktails">Apéro français</button><button class="chip" data-q="Upscale hotel bar, 6 cocktails, classics, winter">Hotel bar (EN)</button><button class="chip" data-q="plus de sans alcool">+ Sans alcool</button><button class="chip" data-q="on nous demande un spritz façon Aperol">Spritz façon Aperol</button><button class="chip" data-q="autre">Autre proposition</button><button class="chip" data-q="insights">Insights</button><button class="chip" data-q="reset">Reset</button></div>
+  <form id="f" autocomplete="off"><input id="q" placeholder="Décrivez votre établissement / Describe your venue" aria-label="Message"><button id="go" type="submit">Composer</button></form>
+</div>
+<footer>Prototype étudiant indépendant par <b>Anugraha SN</b> · BBA, EDHEC Business School · non affilié à Pernod Ricard · prix et recettes illustratifs · pour les professionnels CHR.<br>
+<b>L'abus d'alcool est dangereux pour la santé, à consommer avec modération.</b></footer>
+<script>
+// La Carte engine: browser port of carte_assistant.py (same rules, same data). No DOM here.
+const D = {"cocktails": [{"Cocktail_FR": "Beefeater Tonic", "Cocktail_EN": "Beefeater & Tonic", "recipe": [["Beefeater London Dry", 4.0], ["tonic", 15.0]], "flav": ["bitter", "fresh", "herbal"], "seas": ["all", "summer"], "Speed": 1, "Style": "highball", "NoLow": 0, "Garnish": "zeste de citron / lemon twist", "Popularity": 3, "cost": 1.4, "alc_g": 12.6, "brands": ["Beefeater"], "base": "gin", "premium": false, "n_fr": "beefeater tonic", "n_en": "beefeater & tonic"}, {"Cocktail_FR": "Monkey 47 Tonic", "Cocktail_EN": "Monkey 47 & Tonic", "recipe": [["Monkey 47", 4.0], ["tonic", 15.0]], "flav": ["bitter", "fresh", "herbal"], "seas": ["all", "summer"], "Speed": 1, "Style": "highball", "NoLow": 0, "Garnish": "baies / berries", "Popularity": 2, "cost": 3.24, "alc_g": 14.8, "brands": ["Monkey 47"], "base": "gin", "premium": true, "n_fr": "monkey 47 tonic", "n_en": "monkey 47 & tonic"}, {"Cocktail_FR": "Malfy Limone Tonic", "Cocktail_EN": "Malfy Limone Tonic", "recipe": [["Malfy Gin Con Limone", 4.0], ["tonic", 15.0]], "flav": ["citrus", "fresh"], "seas": ["summer"], "Speed": 1, "Style": "highball", "NoLow": 0, "Garnish": "citron / lemon wheel", "Popularity": 2, "cost": 1.86, "alc_g": 12.9, "brands": ["Malfy"], "base": "gin", "premium": true, "n_fr": "malfy limone tonic", "n_en": "malfy limone tonic"}, {"Cocktail_FR": "Negroni Blanc", "Cocktail_EN": "White Negroni", "recipe": [["Plymouth Gin", 3.0], ["Lillet Blanc", 3.0], ["Suze", 2.0]], "flav": ["bitter", "herbal"], "seas": ["all", "winter"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "zeste / twist", "Popularity": 2, "cost": 1.98, "alc_g": 16.1, "brands": ["Plymouth", "Lillet", "Suze"], "base": "gin", "premium": true, "n_fr": "negroni blanc", "n_en": "white negroni"}, {"Cocktail_FR": "Lillet Vive", "Cocktail_EN": "Lillet Vive", "recipe": [["Lillet Blanc", 5.0], ["tonic", 10.0]], "flav": ["fresh", "fruity"], "seas": ["summer"], "Speed": 1, "Style": "apero", "NoLow": 1, "Garnish": "concombre, fraise / cucumber, strawberry", "Popularity": 2, "cost": 1.32, "alc_g": 6.7, "brands": ["Lillet"], "base": "aperitif", "premium": false, "n_fr": "lillet vive", "n_en": "lillet vive"}, {"Cocktail_FR": "Italicus Royal", "Cocktail_EN": "Italicus Royale", "recipe": [["Italicus", 3.0], ["Mumm Cordon Rouge", 7.0]], "flav": ["citrus", "fresh", "sparkling"], "seas": ["all", "festive", "summer"], "Speed": 1, "Style": "apero", "NoLow": 0, "Garnish": "olive verte / green olive", "Popularity": 1, "cost": 3.83, "alc_g": 11.4, "brands": ["Italicus", "Mumm"], "base": "aperitif", "premium": true, "n_fr": "italicus royal", "n_en": "italicus royale"}, {"Cocktail_FR": "Spritz Rosato", "Cocktail_EN": "Rosato Spritz", "recipe": [["Ramazzotti Aperitivo Rosato", 5.0], ["tonic", 10.0]], "flav": ["bitter", "fresh", "fruity"], "seas": ["summer"], "Speed": 1, "Style": "apero", "NoLow": 1, "Garnish": "orange", "Popularity": 3, "cost": 1.45, "alc_g": 5.9, "brands": ["Ramazzotti"], "base": "aperitif", "premium": false, "n_fr": "spritz rosato", "n_en": "rosato spritz"}, {"Cocktail_FR": "Vesper", "Cocktail_EN": "Vesper", "recipe": [["Beefeater London Dry", 4.5], ["Absolut Vodka", 1.5], ["Lillet Blanc", 0.75]], "flav": ["dry", "strong"], "seas": ["all", "winter"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "zeste de citron / lemon twist", "Popularity": 1, "cost": 1.5, "alc_g": 19.9, "brands": ["Beefeater", "Absolut", "Lillet"], "base": "gin", "premium": false, "n_fr": "vesper", "n_en": "vesper"}, {"Cocktail_FR": "Moscow Mule", "Cocktail_EN": "Moscow Mule", "recipe": [["Absolut Vodka", 4.5], ["ginger beer", 12.0], ["lime juice", 1.5]], "flav": ["fresh", "spicy"], "seas": ["all", "summer"], "Speed": 1, "Style": "highball", "NoLow": 0, "Garnish": "citron vert / lime", "Popularity": 3, "cost": 1.59, "alc_g": 14.2, "brands": ["Absolut"], "base": "vodka", "premium": false, "n_fr": "moscow mule", "n_en": "moscow mule"}, {"Cocktail_FR": "Cosmopolitan", "Cocktail_EN": "Cosmopolitan", "recipe": [["Absolut Citron", 4.0], ["triple sec", 1.5], ["cranberry juice", 3.0], ["lime juice", 1.5]], "flav": ["citrus", "fruity"], "seas": ["all", "festive"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "zeste d'orange / orange twist", "Popularity": 2, "cost": 1.43, "alc_g": 16.2, "brands": ["Absolut"], "base": "vodka", "premium": false, "n_fr": "cosmopolitan", "n_en": "cosmopolitan"}, {"Cocktail_FR": "Espresso Martini", "Cocktail_EN": "Espresso Martini", "recipe": [["Absolut Vodka", 5.0], ["espresso", 3.0], ["sugar syrup", 1.5]], "flav": ["coffee", "sweet"], "seas": ["all", "winter"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "grains de café / coffee beans", "Popularity": 3, "cost": 1.55, "alc_g": 15.8, "brands": ["Absolut"], "base": "vodka", "premium": false, "n_fr": "espresso martini", "n_en": "espresso martini"}, {"Cocktail_FR": "Mojito", "Cocktail_EN": "Mojito", "recipe": [["Havana Club 3 Años", 5.0], ["lime juice", 2.5], ["sugar syrup", 2.0], ["soda", 6.0]], "flav": ["citrus", "fresh", "sweet"], "seas": ["all", "summer"], "Speed": 3, "Style": "classic", "NoLow": 0, "Garnish": "menthe / mint", "Popularity": 3, "cost": 1.33, "alc_g": 15.8, "brands": ["Havana Club"], "base": "rum", "premium": false, "n_fr": "mojito", "n_en": "mojito"}, {"Cocktail_FR": "Daiquiri", "Cocktail_EN": "Daiquiri", "recipe": [["Havana Club 3 Años", 5.0], ["lime juice", 2.5], ["sugar syrup", 1.5]], "flav": ["citrus", "fresh"], "seas": ["all", "summer"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "citron vert / lime", "Popularity": 2, "cost": 1.25, "alc_g": 15.8, "brands": ["Havana Club"], "base": "rum", "premium": false, "n_fr": "daiquiri", "n_en": "daiquiri"}, {"Cocktail_FR": "Cuba Libre", "Cocktail_EN": "Cuba Libre", "recipe": [["Havana Club 3 Años", 5.0], ["cola", 12.0], ["lime juice", 1.0]], "flav": ["fresh", "sweet"], "seas": ["all"], "Speed": 1, "Style": "highball", "NoLow": 0, "Garnish": "citron vert / lime", "Popularity": 2, "cost": 1.3, "alc_g": 15.8, "brands": ["Havana Club"], "base": "rum", "premium": false, "n_fr": "cuba libre", "n_en": "cuba libre"}, {"Cocktail_FR": "Piña Colada", "Cocktail_EN": "Piña Colada", "recipe": [["Havana Club 3 Años", 4.0], ["Malibu", 2.0], ["pineapple juice", 9.0], ["coconut cream", 3.0]], "flav": ["sweet", "tropical"], "seas": ["summer"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "ananas / pineapple", "Popularity": 3, "cost": 1.61, "alc_g": 15.9, "brands": ["Havana Club", "Malibu"], "base": "rum", "premium": false, "n_fr": "pina colada", "n_en": "pina colada"}, {"Cocktail_FR": "Malibu Ananas", "Cocktail_EN": "Malibu Pineapple", "recipe": [["Malibu", 4.0], ["pineapple juice", 12.0]], "flav": ["sweet", "tropical"], "seas": ["summer"], "Speed": 1, "Style": "highball", "NoLow": 1, "Garnish": "ananas / pineapple", "Popularity": 2, "cost": 1.1, "alc_g": 6.6, "brands": ["Malibu"], "base": "rum", "premium": false, "n_fr": "malibu ananas", "n_en": "malibu pineapple"}, {"Cocktail_FR": "Old Fashioned Havana 7", "Cocktail_EN": "Havana 7 Old Fashioned", "recipe": [["Havana Club 7 Años", 5.0], ["sugar syrup", 0.5], ["aromatic bitters", 0.2]], "flav": ["strong", "sweet"], "seas": ["all", "winter"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "zeste d'orange / orange twist", "Popularity": 2, "cost": 1.87, "alc_g": 16.5, "brands": ["Havana Club"], "base": "rum", "premium": true, "n_fr": "old fashioned havana 7", "n_en": "havana 7 old fashioned"}, {"Cocktail_FR": "Jameson Ginger & Lime", "Cocktail_EN": "Jameson Ginger & Lime", "recipe": [["Jameson", 4.0], ["ginger ale", 12.0], ["lime juice", 1.0]], "flav": ["fresh", "spicy"], "seas": ["all"], "Speed": 1, "Style": "highball", "NoLow": 0, "Garnish": "citron vert / lime", "Popularity": 2, "cost": 1.58, "alc_g": 12.6, "brands": ["Jameson"], "base": "whisky", "premium": false, "n_fr": "jameson ginger & lime", "n_en": "jameson ginger & lime"}, {"Cocktail_FR": "Irish Coffee", "Cocktail_EN": "Irish Coffee", "recipe": [["Jameson", 4.0], ["hot coffee", 12.0], ["sugar syrup", 1.5], ["cream", 3.0]], "flav": ["coffee", "sweet", "warm"], "seas": ["festive", "winter"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "crème / cream", "Popularity": 2, "cost": 1.7, "alc_g": 12.6, "brands": ["Jameson"], "base": "whisky", "premium": false, "n_fr": "irish coffee", "n_en": "irish coffee"}, {"Cocktail_FR": "Whisky Sour Chivas", "Cocktail_EN": "Chivas Whisky Sour", "recipe": [["Chivas Regal 12", 5.0], ["lemon juice", 2.5], ["sugar syrup", 1.5], ["aquafaba", 2.0]], "flav": ["citrus", "smooth"], "seas": ["all"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "cerise / cherry", "Popularity": 2, "cost": 2.11, "alc_g": 15.8, "brands": ["Chivas Regal"], "base": "whisky", "premium": true, "n_fr": "whisky sour chivas", "n_en": "chivas whisky sour"}, {"Cocktail_FR": "Glenlivet Highball", "Cocktail_EN": "Glenlivet Highball", "recipe": [["The Glenlivet 12", 4.0], ["soda", 12.0]], "flav": ["fresh", "smooth"], "seas": ["all"], "Speed": 1, "Style": "highball", "NoLow": 0, "Garnish": "zeste / twist", "Popularity": 1, "cost": 1.85, "alc_g": 12.6, "brands": ["The Glenlivet"], "base": "whisky", "premium": true, "n_fr": "glenlivet highball", "n_en": "glenlivet highball"}, {"Cocktail_FR": "Penicillin Chivas", "Cocktail_EN": "Chivas Penicillin", "recipe": [["Chivas Regal 12", 5.0], ["lemon juice", 2.5], ["honey-ginger syrup", 2.0]], "flav": ["citrus", "smooth", "spicy"], "seas": ["all", "winter"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "gingembre confit / candied ginger", "Popularity": 2, "cost": 2.19, "alc_g": 15.8, "brands": ["Chivas Regal"], "base": "whisky", "premium": true, "n_fr": "penicillin chivas", "n_en": "chivas penicillin"}, {"Cocktail_FR": "Sidecar Martell", "Cocktail_EN": "Martell Sidecar", "recipe": [["Martell VS", 4.5], ["triple sec", 2.0], ["lemon juice", 2.0]], "flav": ["citrus", "strong"], "seas": ["all", "festive"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "bord sucré / sugar rim", "Popularity": 1, "cost": 2.33, "alc_g": 18.9, "brands": ["Martell"], "base": "cognac", "premium": true, "n_fr": "sidecar martell", "n_en": "martell sidecar"}, {"Cocktail_FR": "Martell Tonic", "Cocktail_EN": "Martell & Tonic", "recipe": [["Martell VS", 4.0], ["tonic", 12.0]], "flav": ["fresh", "smooth"], "seas": ["all", "summer"], "Speed": 1, "Style": "highball", "NoLow": 0, "Garnish": "orange", "Popularity": 1, "cost": 2.11, "alc_g": 12.6, "brands": ["Martell"], "base": "cognac", "premium": true, "n_fr": "martell tonic", "n_en": "martell & tonic"}, {"Cocktail_FR": "Mauresque", "Cocktail_EN": "Mauresque", "recipe": [["Ricard", 2.0], ["orgeat syrup", 1.0], ["water", 10.0]], "flav": ["anise", "fresh", "sweet"], "seas": ["all", "summer"], "Speed": 1, "Style": "french", "NoLow": 1, "Garnish": "glaçons / ice", "Popularity": 2, "cost": 0.6, "alc_g": 7.1, "brands": ["Ricard"], "base": "anise", "premium": false, "n_fr": "mauresque", "n_en": "mauresque"}, {"Cocktail_FR": "Tomate", "Cocktail_EN": "Ricard Tomate", "recipe": [["Ricard", 2.0], ["grenadine syrup", 1.0], ["water", 10.0]], "flav": ["anise", "sweet"], "seas": ["all", "summer"], "Speed": 1, "Style": "french", "NoLow": 1, "Garnish": "glaçons / ice", "Popularity": 1, "cost": 0.58, "alc_g": 7.1, "brands": ["Ricard"], "base": "anise", "premium": false, "n_fr": "tomate", "n_en": "ricard tomate"}, {"Cocktail_FR": "Margarita Altos", "Cocktail_EN": "Altos Margarita", "recipe": [["Olmeca Altos Plata", 5.0], ["triple sec", 2.0], ["lime juice", 2.5]], "flav": ["citrus", "fresh"], "seas": ["all", "summer"], "Speed": 2, "Style": "classic", "NoLow": 0, "Garnish": "bord salé / salt rim", "Popularity": 3, "cost": 2.14, "alc_g": 19.7, "brands": ["Olmeca Altos"], "base": "tequila", "premium": false, "n_fr": "margarita altos", "n_en": "altos margarita"}, {"Cocktail_FR": "Paloma", "Cocktail_EN": "Paloma", "recipe": [["Olmeca Altos Plata", 5.0], ["grapefruit soda", 12.0], ["lime juice", 1.0]], "flav": ["bitter", "citrus", "fresh"], "seas": ["summer"], "Speed": 1, "Style": "highball", "NoLow": 0, "Garnish": "pamplemousse / grapefruit", "Popularity": 2, "cost": 2.1, "alc_g": 15.0, "brands": ["Olmeca Altos"], "base": "tequila", "premium": false, "n_fr": "paloma", "n_en": "paloma"}, {"Cocktail_FR": "Kir Royal Mumm", "Cocktail_EN": "Mumm Kir Royale", "recipe": [["Mumm Cordon Rouge", 8.0], ["crème de cassis", 1.0]], "flav": ["fruity", "sparkling"], "seas": ["all", "festive"], "Speed": 1, "Style": "french", "NoLow": 0, "Garnish": "", "Popularity": 2, "cost": 3.28, "alc_g": 8.8, "brands": ["Mumm"], "base": "champagne", "premium": true, "n_fr": "kir royal mumm", "n_en": "mumm kir royale"}, {"Cocktail_FR": "Suze Tonic", "Cocktail_EN": "Suze & Tonic", "recipe": [["Suze", 4.0], ["tonic", 12.0]], "flav": ["bitter", "fresh", "herbal"], "seas": ["all", "summer"], "Speed": 1, "Style": "apero", "NoLow": 1, "Garnish": "pamplemousse / grapefruit", "Popularity": 1, "cost": 1.07, "alc_g": 4.7, "brands": ["Suze"], "base": "aperitif", "premium": false, "n_fr": "suze tonic", "n_en": "suze & tonic"}, {"Cocktail_FR": "Virgin Mojito", "Cocktail_EN": "Virgin Mojito", "recipe": [["lime juice", 2.5], ["sugar syrup", 2.0], ["soda", 12.0]], "flav": ["citrus", "fresh"], "seas": ["all", "summer"], "Speed": 2, "Style": "no-alcohol", "NoLow": 2, "Garnish": "menthe / mint", "Popularity": 3, "cost": 0.45, "alc_g": 0.0, "brands": [], "base": "none", "premium": false, "n_fr": "virgin mojito", "n_en": "virgin mojito"}, {"Cocktail_FR": "Garden Tonic (sans alcool)", "Cocktail_EN": "Garden Tonic (alcohol-free)", "recipe": [["tonic", 15.0], ["rosemary syrup", 1.0], ["lime juice", 0.5]], "flav": ["bitter", "fresh", "herbal"], "seas": ["all", "summer"], "Speed": 1, "Style": "no-alcohol", "NoLow": 2, "Garnish": "romarin, concombre / rosemary, cucumber", "Popularity": 2, "cost": 0.71, "alc_g": 0.0, "brands": [], "base": "none", "premium": false, "n_fr": "garden tonic (sans alcool)", "n_en": "garden tonic (alcohol-free)"}, {"Cocktail_FR": "Virgin Colada", "Cocktail_EN": "Virgin Colada", "recipe": [["pineapple juice", 12.0], ["coconut cream", 4.0], ["lime juice", 1.0]], "flav": ["sweet", "tropical"], "seas": ["summer"], "Speed": 2, "Style": "no-alcohol", "NoLow": 2, "Garnish": "ananas / pineapple", "Popularity": 2, "cost": 0.69, "alc_g": 0.0, "brands": [], "base": "none", "premium": false, "n_fr": "virgin colada", "n_en": "virgin colada"}, {"Cocktail_FR": "Café Tonic", "Cocktail_EN": "Espresso Tonic", "recipe": [["espresso", 3.0], ["tonic", 12.0]], "flav": ["bitter", "coffee", "fresh"], "seas": ["all", "summer"], "Speed": 1, "Style": "no-alcohol", "NoLow": 2, "Garnish": "orange", "Popularity": 1, "cost": 0.76, "alc_g": 0.0, "brands": [], "base": "none", "premium": false, "n_fr": "cafe tonic", "n_en": "espresso tonic"}, {"Cocktail_FR": "Ginger Lime Fizz", "Cocktail_EN": "Ginger Lime Fizz", "recipe": [["ginger beer", 12.0], ["lime juice", 2.0], ["honey-ginger syrup", 1.0]], "flav": ["fresh", "spicy"], "seas": ["all", "winter"], "Speed": 1, "Style": "no-alcohol", "NoLow": 2, "Garnish": "citron vert / lime", "Popularity": 2, "cost": 0.74, "alc_g": 0.0, "brands": [], "base": "none", "premium": false, "n_fr": "ginger lime fizz", "n_en": "ginger lime fizz"}], "ingredients": {"Absolut Vodka": {"Brand": "Absolut", "Category": "vodka", "Bottle_cl": 70.0, "Price": 15.0}, "Absolut Citron": {"Brand": "Absolut", "Category": "vodka", "Bottle_cl": 70.0, "Price": 16.0}, "Beefeater London Dry": {"Brand": "Beefeater", "Category": "gin", "Bottle_cl": 70.0, "Price": 14.0}, "Plymouth Gin": {"Brand": "Plymouth", "Category": "gin", "Bottle_cl": 70.0, "Price": 24.0}, "Monkey 47": {"Brand": "Monkey 47", "Category": "gin", "Bottle_cl": 50.0, "Price": 33.0}, "Malfy Gin Con Limone": {"Brand": "Malfy", "Category": "gin", "Bottle_cl": 70.0, "Price": 22.0}, "Havana Club 3 Años": {"Brand": "Havana Club", "Category": "rum", "Bottle_cl": 70.0, "Price": 13.0}, "Havana Club 7 Años": {"Brand": "Havana Club", "Category": "rum", "Bottle_cl": 70.0, "Price": 22.0}, "Malibu": {"Brand": "Malibu", "Category": "rum", "Bottle_cl": 70.0, "Price": 12.0}, "Jameson": {"Brand": "Jameson", "Category": "whisky", "Bottle_cl": 70.0, "Price": 18.0}, "Chivas Regal 12": {"Brand": "Chivas Regal", "Category": "whisky", "Bottle_cl": 70.0, "Price": 25.0}, "The Glenlivet 12": {"Brand": "The Glenlivet", "Category": "whisky", "Bottle_cl": 70.0, "Price": 28.0}, "Martell VS": {"Brand": "Martell", "Category": "cognac", "Bottle_cl": 70.0, "Price": 28.0}, "Olmeca Altos Plata": {"Brand": "Olmeca Altos", "Category": "tequila", "Bottle_cl": 70.0, "Price": 22.0}, "Ricard": {"Brand": "Ricard", "Category": "anise", "Bottle_cl": 100.0, "Price": 18.0}, "Lillet Blanc": {"Brand": "Lillet", "Category": "aperitif", "Bottle_cl": 75.0, "Price": 13.0}, "Suze": {"Brand": "Suze", "Category": "aperitif", "Bottle_cl": 100.0, "Price": 14.0}, "Italicus": {"Brand": "Italicus", "Category": "aperitif", "Bottle_cl": 70.0, "Price": 25.0}, "Ramazzotti Aperitivo Rosato": {"Brand": "Ramazzotti", "Category": "aperitif", "Bottle_cl": 70.0, "Price": 14.0}, "Mumm Cordon Rouge": {"Brand": "Mumm", "Category": "champagne", "Bottle_cl": 75.0, "Price": 28.0}, "tonic": {"Brand": "", "Category": "mixer", "Bottle_cl": 20.0, "Price": 0.6}, "soda": {"Brand": "", "Category": "mixer", "Bottle_cl": 100.0, "Price": 0.8}, "ginger beer": {"Brand": "", "Category": "mixer", "Bottle_cl": 20.0, "Price": 0.7}, "ginger ale": {"Brand": "", "Category": "mixer", "Bottle_cl": 20.0, "Price": 0.6}, "cola": {"Brand": "", "Category": "mixer", "Bottle_cl": 33.0, "Price": 0.5}, "grapefruit soda": {"Brand": "", "Category": "mixer", "Bottle_cl": 25.0, "Price": 0.7}, "cranberry juice": {"Brand": "", "Category": "juice", "Bottle_cl": 100.0, "Price": 2.5}, "pineapple juice": {"Brand": "", "Category": "juice", "Bottle_cl": 100.0, "Price": 2.2}, "lime juice": {"Brand": "", "Category": "juice", "Bottle_cl": 100.0, "Price": 4.0}, "lemon juice": {"Brand": "", "Category": "juice", "Bottle_cl": 100.0, "Price": 3.5}, "coconut cream": {"Brand": "", "Category": "juice", "Bottle_cl": 40.0, "Price": 2.4}, "espresso": {"Brand": "", "Category": "juice", "Bottle_cl": 3.0, "Price": 0.25}, "hot coffee": {"Brand": "", "Category": "juice", "Bottle_cl": 12.0, "Price": 0.3}, "cream": {"Brand": "", "Category": "juice", "Bottle_cl": 50.0, "Price": 2.5}, "water": {"Brand": "", "Category": "mixer", "Bottle_cl": 100.0, "Price": 0.0}, "sugar syrup": {"Brand": "", "Category": "syrup", "Bottle_cl": 70.0, "Price": 3.5}, "orgeat syrup": {"Brand": "", "Category": "syrup", "Bottle_cl": 70.0, "Price": 6.0}, "grenadine syrup": {"Brand": "", "Category": "syrup", "Bottle_cl": 70.0, "Price": 5.0}, "honey-ginger syrup": {"Brand": "", "Category": "syrup", "Bottle_cl": 70.0, "Price": 6.0}, "rosemary syrup": {"Brand": "", "Category": "syrup", "Bottle_cl": 70.0, "Price": 6.0}, "triple sec": {"Brand": "", "Category": "liqueur", "Bottle_cl": 70.0, "Price": 11.0}, "crème de cassis": {"Brand": "", "Category": "liqueur", "Bottle_cl": 70.0, "Price": 10.0}, "aromatic bitters": {"Brand": "", "Category": "liqueur", "Bottle_cl": 20.0, "Price": 12.0}, "aquafaba": {"Brand": "", "Category": "juice", "Bottle_cl": 100.0, "Price": 0.5}}, "FR_W": "\\b(bonjour|je|nous|on|pour|avec|sans|mon|ma|notre|une|des|de|le|la|les|et|pas|plus|prix|carte|clientele|cocktails? par semaine|etudiante?s?|ete|hiver|remplace|moins)\\b", "EN_W": "\\b(i|we|our|my|the|and|for|with|price|menu|guests|per week|students?|summer|winter|replace|under|cheaper|a|of|bar is)\\b", "NUMW": {"six": 6, "huit": 8, "eight": 8, "dix": 10, "ten": 10, "douze": 12, "twelve": 12, "cinq": 5, "five": 5}, "VENUES": {"cocktail_bar": "bar a cocktails?|cocktail bar|speakeasy|mixolog", "brasserie": "brasserie|\\bcafe\\b|bistro|bar.?tabac|\\bpmu\\b", "restaurant": "restaurant|\\bresto\\b", "rooftop": "rooftop|terrasse|terrace|guinguette|plage|beach", "club": "\\bclub|discotheque|boite de nuit|nightclub", "hotel": "hotel|lobby", "student": "etudiant|student|campus|\\bbde\\b"}, "VENUE_LABEL": {"cocktail_bar": ["bar à cocktails", "cocktail bar"], "brasserie": ["brasserie / café", "brasserie / café"], "restaurant": ["restaurant", "restaurant"], "rooftop": ["rooftop / terrasse", "rooftop / terrace"], "club": ["club", "club"], "hotel": ["bar d'hôtel", "hotel bar"], "student": ["bar étudiant", "student bar"]}, "SEASONS": {"summer": "\\bete\\b|summer|estival|terrasse|plage|beach|soleil|sunny|chaleur", "winter": "hiver|winter|froid|cosy|cozy|apres.?ski|\\bski\\b", "festive": "noel|christmas|fetes|festive|nouvel an|new year|reveillon|celebration|mariage|wedding"}, "SEASON_LABEL": {"summer": ["été", "summer"], "winter": ["hiver", "winter"], "festive": ["fêtes", "festive"]}, "STYLES": {"french": "francais|french|provencal|marseille|pastis|a la francaise", "apero": "apero|aperitif|italien|italian|italie|spritz|apericena", "classic": "classiques?|classic|vintage|speakeasy|annees 20|twenties|intemporel", "highball": "highball|long drinks?|simples?|easy"}, "STYLE_LABEL": {"french": ["apéro français", "French apéritif"], "apero": ["apéritif", "apéritif"], "classic": ["classiques", "classics"], "highball": ["long drinks", "long drinks"]}, "FLAVOURS": {"fresh": "frais|fraich|fresh|leger|light|desalterant|refreshing", "bitter": "\\bamers?\\b|amertume|bitter", "sweet": "sucre|\\bdoux\\b|sweet|gourmand", "citrus": "agrume|citron|citrus|acidul|\\bsours?\\b", "fruity": "fruite|fruity|fruits? rouges", "coffee": "\\bcoffee|espresso|a base de cafe|cafe gourmand", "spicy": "epice|gingembre|spicy|ginger", "strong": "\\bforts?\\b|\\bstrong|corse|boozy|spirit.?forward", "herbal": "herbac|herbal|botani", "sparkling": "bulles|petillant|champagne|sparkling|bubbles", "tropical": "tropical|tiki|caraibes|exotique|exotic"}, "FLAV_LABEL": {"fresh": ["frais", "fresh"], "bitter": ["amer", "bitter"], "sweet": ["gourmand", "sweet"], "citrus": ["agrumes", "citrus"], "fruity": ["fruité", "fruity"], "coffee": ["café", "coffee"], "spicy": ["épicé", "spicy"], "strong": ["puissant", "spirit-forward"], "herbal": ["herbacé", "herbal"], "sparkling": ["bulles", "sparkling"], "tropical": ["tropical", "tropical"], "smooth": ["rond", "smooth"], "anise": ["anisé", "anise"], "dry": ["sec", "dry"], "warm": ["chaud", "warm"]}, "SPIRITS": {"gin": "\\bgin\\b", "vodka": "vodka", "rum": "\\brhums?\\b|\\brum\\b", "whisky": "whisk", "cognac": "cognac", "tequila": "tequila|mezcal", "anise": "pastis|anis|ricard", "champagne": "champagne"}, "SPIRIT_LABEL": {"gin": ["gin", "gin"], "vodka": ["vodka", "vodka"], "rum": ["rhum", "rum"], "whisky": ["whisky", "whisky"], "cognac": ["cognac", "cognac"], "tequila": ["tequila", "tequila"], "anise": ["anisé", "anise"], "champagne": ["champagne", "champagne"], "aperitif": ["apéritif", "apéritif"], "none": ["sans alcool", "alcohol-free"]}, "COMPETITORS": {"aperol": ["Aperol", "apero", "Spritz Rosato (Ramazzotti) ou Italicus Royal", "Rosato Spritz (Ramazzotti) or Italicus Royale"], "campari": ["Campari", "apero", "Negroni Blanc (Plymouth, Lillet, Suze)", "White Negroni (Plymouth, Lillet, Suze)"], "bacardi": ["Bacardi", "rum", "Havana Club", "Havana Club"], "captain morgan": ["Captain Morgan", "rum", "Havana Club", "Havana Club"], "smirnoff": ["Smirnoff", "vodka", "Absolut", "Absolut"], "grey goose": ["Grey Goose", "vodka", "Absolut", "Absolut"], "hendrick": ["Hendrick's", "gin", "Monkey 47 ou Plymouth", "Monkey 47 or Plymouth"], "bombay": ["Bombay", "gin", "Beefeater", "Beefeater"], "jack daniel": ["Jack Daniel's", "whisky", "Jameson", "Jameson"], "hennessy": ["Hennessy", "cognac", "Martell", "Martell"], "patron": ["Patrón", "tequila", "Olmeca Altos", "Olmeca Altos"], "don julio": ["Don Julio", "tequila", "Olmeca Altos", "Olmeca Altos"], "baileys": ["Baileys", "", "Irish Coffee (Jameson)", "Irish Coffee (Jameson)"]}, "GEN_FR": {"tonic": "tonic", "soda": "eau gazeuse", "ginger beer": "ginger beer", "ginger ale": "ginger ale", "cola": "cola", "grapefruit soda": "soda pamplemousse", "cranberry juice": "jus de cranberry", "pineapple juice": "jus d'ananas", "lime juice": "jus de citron vert", "lemon juice": "jus de citron", "coconut cream": "crème de coco", "espresso": "espresso", "hot coffee": "café chaud", "cream": "crème", "sugar syrup": "sirop de sucre", "orgeat syrup": "sirop d'orgeat", "grenadine syrup": "sirop de grenadine", "honey-ginger syrup": "sirop miel-gingembre", "rosemary syrup": "sirop de romarin", "triple sec": "triple sec", "crème de cassis": "crème de cassis", "aromatic bitters": "bitter aromatique", "aquafaba": "aquafaba"}, "TXT": {"fr": {"hello": "Bonjour ! Décrivez votre établissement et je compose une carte cocktails chiffrée avec les marques Pernod Ricard : prix, pour cost, marge, et la commande de la semaine.\nEssayez : « bar à cocktails à Lyon, 8 cocktails, prix max 12 €, été, 250 cocktails par semaine » ou « rooftop haut de gamme, 6 cocktails, plus de sans alcool ».\nEnsuite : « remplace le Mojito », « prix max 12 », « pas de rhum », « autre ». Tapez « insights » pour le rapport trade marketing.", "ask": "Pour composer la carte, dites-m'en un peu plus : type d'établissement, nombre de cocktails, prix maximum, saison ou ambiance.", "menu": "Votre carte", "pc": "pour cost moyen", "margin": "marge / verre (HT)", "week": "marge / semaine", "order": "Commande hebdo", "bt": "bt", "free": "SANS ALCOOL", "low": "LÉGER", "std": "verre std", "over": "Au prix plafond de {c} €, {n} cocktail(s) dépassent 30 % de pour cost : à surveiller.", "comp": "{b} ne fait pas partie du portefeuille : alternative proposée, {a}.", "assume": "Hypothèses : {v} cocktails/semaine répartis à parts égales · pour cost cible {t} % · TVA 20 %.", "health": "L'abus d'alcool est dangereux pour la santé, à consommer avec modération.", "note": "Prototype indépendant, non affilié à Pernod Ricard · prix et recettes illustratifs · pour les professionnels CHR.", "bye": "Belle saison !", "reset": "On repart de zéro. Quel établissement, et combien de cocktails ?"}, "en": {"hello": "Hi! Describe your venue and I'll build a costed cocktail menu with Pernod Ricard brands: price, pour cost, margin, and the week's bottle order.\nTry: \"cocktail bar in Lyon, 8 cocktails, under 12 €, summer, 250 cocktails a week\" or \"upscale rooftop, 6 cocktails, more alcohol-free\".\nThen: \"replace the Mojito\", \"max 12 €\", \"no rum\", \"another\". Type \"insights\" for the trade-marketing report.", "ask": "To build the menu, tell me a bit more: type of venue, number of cocktails, maximum price, season or mood.", "menu": "Your menu", "pc": "average pour cost", "margin": "margin / serve (ex-VAT)", "week": "margin / week", "order": "Weekly order", "bt": "btl", "free": "ALCOHOL-FREE", "low": "LOW", "std": "std drink", "over": "At the {c} € price cap, {n} cocktail(s) go above 30% pour cost: keep an eye on them.", "comp": "{b} isn't in the portfolio, so here's an alternative: {a}.", "assume": "Assumptions: {v} cocktails/week split evenly · target pour cost {t}% · 20% VAT.", "health": "Please drink responsibly.", "note": "Independent prototype, not affiliated with Pernod Ricard · illustrative prices and recipes · for on-trade professionals.", "bye": "Have a great season!", "reset": "Fresh start. What kind of venue, and how many cocktails?"}}, "colors": {"NAVY": "#123F75", "DEEP": "#0B2A52", "SKY": "#76A0CD", "MIST": "#EEF3F9", "INKC": "#14213D", "GREY": "#6B7A90", "LINE": "#DCE5F0", "GREEN": "#2E9E7A", "RED": "#C0392B"}};
+const VAT = 1.2;
+const C = D.colors;
+const RX = {};
+const rx = (p, f = "") => RX[p + "|" + f] || (RX[p + "|" + f] = new RegExp(p, f));
+const rs = (p, t) => rx(p).exec(t);
+function norm(s) {
+  return String(s).toLowerCase().replace(/œ/g, "oe").replace(/’/g, "'").normalize("NFKD").replace(/[̀-ͯ]/g, "");
+}
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;"); }
+function pyRound(x, d = 0) {                       // Python's round-half-even
+  const m = Math.pow(10, d), v = x * m, f = Math.floor(v), diff = v - f;
+  let r = diff > 0.5 + 1e-9 ? f + 1 : diff < 0.5 - 1e-9 ? f : (f % 2 === 0 ? f : f + 1);
+  return r / m;
+}
+const pct = x => (x * 100).toFixed(0) + "%";
+function groupThousands(s, sep) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, sep); }
+function eur(x, lang) {
+  const [a, b] = x.toFixed(2).split(".");
+  return lang === "fr" ? `${groupThousands(a, " ")},${b} €` : `€${groupThousands(a, ",")}.${b}`;
+}
+function eur0(x, lang) {
+  const a = x.toFixed(0);
+  return lang === "fr" ? `${groupThousands(a, " ")} €` : `€${groupThousands(a, ",")}`;
+}
+function num(x, lang) { const s = String(+x); return lang === "fr" ? s.replace(".", ",") : s; }
+const fmt = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k]);
+function mostCommon(counter, n) {                // counter: Map, insertion-ordered; stable by count desc
+  return [...counter.entries()].map((e, i) => [e, i]).sort((a, b) => b[0][1] - a[0][1] || a[1] - b[1]).slice(0, n).map(x => x[0]);
+}
+function inc(m, k, v = 1) { m.set(k, (m.get(k) || 0) + v); }
+
+const COC = D.cocktails;            // precomputed rows
+const ING = D.ingredients;          // name -> {Brand, Category, Bottle_cl, Price}
+const BRAND_CAT = {};
+for (const [name, g] of Object.entries(ING)) if (g.Brand && !(g.Brand in BRAND_CAT)) BRAND_CAT[g.Brand] = g.Category;
+
+// ---------- parsing ----------
+function isFrench(t) { const n = norm(t); return (n.match(rx(D.FR_W, "g")) || []).length > (n.match(rx(D.EN_W, "g")) || []).length; }
+function isEnglish(t) { const n = norm(t); return (n.match(rx(D.EN_W, "g")) || []).length > (n.match(rx(D.FR_W, "g")) || []).length; }
+
+function parse(text, S) {
+  let t = norm(text.trim());
+  for (const [w, n] of Object.entries(D.NUMW)) t = t.replace(rx(`\\b${w}\\b`, "g"), String(n));
+  for (const [k, p] of Object.entries(D.VENUES)) if (rs(p, t)) S.venue = k;
+  if (rs("haut de gamme|premium|luxe|chic|upscale|high.?end|palace|plus premium", t)) S.tier = "premium";
+  else if (rs("etudiant|student|pas cher|cheap|petit budget|abordable|happy hour|moins cher|cheaper|populaire", t)) S.tier = "budget";
+  const m = rs("(?:prix\\s*)?(?:max(?:imum)?|moins de|under|below|jusqu'a|pas plus de|<|maxi)\\s*(\\d+(?:[.,]\\d+)?)\\s*(?:€|eur|euros?)?", t)
+         || rs("(\\d+(?:[.,]\\d+)?)\\s*(?:€|eur|euros?)\\s*(?:max|maximum|maxi)", t);
+  if (m && parseFloat(m[1].replace(",", ".")) < 40) S.cap = parseFloat(m[1].replace(",", "."));
+  for (const mm of t.matchAll(rx("(\\d+)\\s*(cocktails?|verres?|serves?|drinks?|boissons?|couverts|clients|covers|guests)\\s*(?:par|/|a|per|each|chaque)?\\s*(semaine|week|jour|day|soir|night|soiree)?", "g"))) {
+    const n = parseInt(mm[1]), what = mm[2], per = mm[3];
+    const sw = arr => arr.some(a => what.startsWith(a));
+    if (per) {
+      const v = n * (["jour", "day", "soir", "night", "soiree"].includes(per) ? 7 : 1);
+      S.volume = sw(["cocktail", "verre", "serve", "drink", "boisson"]) ? v : Math.trunc(v * 0.5);
+    } else if (sw(["cocktail", "drink", "boisson"]) && n >= 3 && n <= 16) S.n = n;
+    else if (sw(["couvert", "client", "cover", "guest"])) S.volume = Math.trunc(n * 7 * 0.5);
+  }
+  const pc = rs("pour.?cost\\s*(?:de|of|a|cible|target)?\\s*(\\d{2})\\s*%", t);
+  if (pc) S.target = parseInt(pc[1]) / 100;
+  for (const [k, p] of Object.entries(D.SEASONS)) if (rs(p, t)) S.season = k;
+  for (const [k, p] of Object.entries(D.STYLES)) if (rs(p, t)) S.styles.add(k);
+  const neg = "(?:pas de|pas d'|sans|no|without|except|aucun|pas trop)\\s+(?:\\w+\\s+)?";
+  for (const [k, p] of Object.entries(D.FLAVOURS)) {
+    if (rs(neg + "(?:" + p + ")", t)) { S.flav.delete(k); S.avoid_flav.add(k); }
+    else if (rs(p, t)) S.flav.add(k);
+  }
+  for (const [k, p] of Object.entries(D.SPIRITS)) {
+    if (rs(neg + "(?:" + p + ")", t)) { S.spirits.delete(k); S.no_spirit.add(k); }
+    else if (rs(p, t)) { S.spirits.add(k); S.no_spirit.delete(k); }
+  }
+  if (rs("plus de sans alcool|more (?:alcohol.?free|no.?alcohol|mocktails)|mocktails?|no.?low|alcohol.?free|sans alcool|dry january|janvier sobre|sobre", t))
+    S.nolow = rs("dry january|janvier sobre", t) ? 0.5 : Math.max(S.nolow, 0.3);
+  if (rs("rapide|\\bvite\\b|\\brush\\b|\\bfast\\b|\\bquick|seul derriere|alone behind|un seul barman|pas de barman|no bartender|debit|high volume", t)) S.fast = true;
+  for (const [k, v] of Object.entries(D.COMPETITORS)) {
+    if (t.includes(k)) {
+      S.comp.add(k);
+      if (v[1] in D.SPIRITS) S.spirits.add(v[1]); else if (v[1]) S.styles.add(v[1]);
+    }
+  }
+  if (rs("\\bautre\\b|another|different|d'autres|other options?|encore", t)) S.offset += 1;
+  for (const mm of t.matchAll(rx("(?:remplace|enleve|retire|supprime|sans le|sans la|replace|remove|swap|drop|pas de)\\s+(?:le |la |les |l'|the )?([a-z0-9' &-]{3,30})", "g"))) {
+    const key = mm[1].trim();
+    for (const r of COC) if (r.n_fr.includes(key) || r.n_en.includes(key)) S.removed.add(r.Cocktail_FR);
+  }
+  return S;
+}
+
+// ---------- menu engine ----------
+const targetFor = (r, S) => S.target + (r.brands.includes("Mumm") ? 0.06 : 0);
+function priceFor(r, S) {
+  let p = Math.ceil(r.cost * VAT / targetFor(r, S) * 2) / 2;
+  if (S.tier === "premium") p = Math.max(p, r.NoLow === 0 ? 12 : 9);
+  p = Math.max(p, 4);
+  if (S.cap) p = Math.min(p, S.cap);
+  return p;
+}
+function score(r, S) {
+  const inter = (a, b) => a.filter(x => b.has(x)).length;
+  let s = 0.8 * r.Popularity + 2.5 * inter(r.flav, S.flav) - 3 * inter(r.flav, S.avoid_flav);
+  if (S.season) s += r.seas.includes(S.season) ? 2 : ((S.season === "summer" || S.season === "winter") && !r.seas.includes("all") ? -1.5 : 0);
+  if (S.spirits.size) s += S.spirits.has(r.base) ? 3 : 0;
+  if (S.styles.size) s += (S.styles.has(r.Style) || (S.styles.has("apero") && r.Style === "french")) ? 2 : 0;
+  if (S.fast) s -= { 1: 0, 2: 1, 3: 3 }[r.Speed];
+  if (S.nolow >= 0.3 && r.NoLow === 1) s += S.nolow >= 0.5 ? 2 : 1;
+  if (S.tier === "premium") s += r.premium ? 1.5 : -0.5;
+  if (S.tier === "budget") s -= r.premium ? 1.5 : 0;
+  const v = S.venue;
+  if (v === "student" && r.Speed === 1) s += 0.5;
+  if (v === "club" && r.Style === "highball") s += 1.5;
+  if (v === "cocktail_bar" && r.Style === "classic") s += 1;
+  if (v === "brasserie" && ["french", "apero", "highball"].includes(r.Style)) s += 1;
+  if (v === "rooftop" && (r.seas.includes("summer") || r.Style === "apero")) s += 1;
+  if (v === "hotel" && (r.premium || r.Style === "classic")) s += 1;
+  if (S.cap) {
+    const need = Math.ceil(r.cost * VAT / targetFor(r, S) * 2) / 2;
+    if (need > S.cap) s -= 8 * (need / S.cap - 1);
+  }
+  return s;
+}
+function item(r, S) {
+  const i = S.lang === "fr" ? 0 : 1, price = priceFor(r, S), ht = price / VAT;
+  const rec = r.recipe.filter(([ing]) => ing !== "water").map(([ing, cl]) => `${num(cl, S.lang)} cl ${i === 0 ? (D.GEN_FR[ing] || ing) : ing}`).join(" · ");
+  const g = r.Garnish.includes(" / ") ? r.Garnish.split(" / ")[i] : r.Garnish;
+  return { name: i === 0 ? r.Cocktail_FR : r.Cocktail_EN, key: r.Cocktail_FR, recipe: rec, brands: r.brands, base: r.base, price, cost: r.cost,
+           pc: r.cost / ht, margin: ht - r.cost, alc: r.alc_g, std: r.alc_g / 10, nolow: r.NoLow, garnish: g, recipe_raw: r.recipe };
+}
+function buildMenu(S) {
+  const n = S.n;
+  let d = COC.filter(r => !S.removed.has(r.Cocktail_FR) && !S.no_spirit.has(r.base)).map(r => ({ r, sc: score(r, S) }));
+  d.sort((a, b) => b.sc - a.sc || a.r.cost - b.r.cost);
+  const rot = rows => { if (!rows.length) return rows; const o = (S.offset * 2) % rows.length; return rows.slice(o).concat(rows.slice(0, o)); };
+  const free = rot(d.filter(x => x.r.NoLow === 2).map(x => x.r));
+  const alc = rot(d.filter(x => x.r.NoLow < 2).map(x => x.r));
+  const kFree = Math.max(1, pyRound(n * S.nolow));
+  const out = free.slice(0, kFree);
+  const perBase = new Map(), perBrand = new Map();
+  const capBase = S.spirits.size ? 3 : 2;
+  for (const r of alc) {
+    if (out.length >= n) break;
+    if ((perBase.get(r.base) || 0) >= (S.spirits.has(r.base) ? capBase + 1 : capBase)) continue;
+    const ub = [...new Set(r.brands)];
+    if (ub.some(b => (perBrand.get(b) || 0) >= (S.spirits.has(BRAND_CAT[b]) ? 2 : 1))) continue;
+    out.push(r); inc(perBase, r.base);
+    for (const b of ub) inc(perBrand, b);
+  }
+  for (const r of alc) { if (out.length >= n) break; if (!out.includes(r)) out.push(r); }
+  const items = out.map(r => item(r, S));
+  const alcP = items.filter(x => x.nolow < 2).map(x => x.price);
+  if (alcP.length) {
+    const floor = Math.ceil(0.65 * alcP.reduce((a, b) => a + b, 0) / alcP.length * 2) / 2;
+    for (const x of items) if (x.nolow === 2 && x.price < floor) {
+      x.price = Math.min(floor, S.cap || floor); const ht = x.price / VAT; x.pc = x.cost / ht; x.margin = ht - x.cost;
+    }
+  }
+  items.sort((a, b) => ((a.nolow === 2) - (b.nolow === 2)) || (b.price - a.price));
+  return items;
+}
+function stock(items, S) {
+  const per = S.volume / Math.max(1, items.length), need = new Map();
+  for (const it of items) for (const [ing, cl] of it.recipe_raw) if (ING[ing].Brand) inc(need, ing, cl * per);
+  return [...need.entries()].map((e, i) => [e, i]).sort((a, b) => b[0][1] - a[0][1] || a[1] - b[1]).map(([[ing, v]]) => {
+    const g = ING[ing], b = Math.ceil(v / g.Bottle_cl);
+    return [ing, g.Bottle_cl, b, pyRound(b * g.Price)];
+  });
+}
+
+// ---------- session log + insights ----------
+const LOG = [];
+let SEEDED = 0;
+function logRow(S, items, flagged) {
+  const n = Math.max(1, items.length);
+  const row = { venue: S.venue || "", cap: S.cap, n: items.length, flav: [...S.flav].sort(), spirits: [...S.spirits].sort(), comp: [...S.comp].sort(),
+                brands: items.flatMap(it => [...new Set(it.brands)]), free_share: items.filter(it => it.nolow === 2).length / n,
+                avg_pc: items.reduce((a, it) => a + it.pc, 0) / n, bottles: stock(items, S).map(([ing, , b]) => [ing, b]), flagged };
+  if (S.log_i !== null) LOG[S.log_i] = row; else { S.log_i = LOG.length; LOG.push(row); }
+}
+function median(a) { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+function insights(lang) {
+  const fr = lang === "fr", i = fr ? 0 : 1;
+  if (!LOG.length) return { type: "text", lang, text: fr ? "Pas encore de carte dans cette session." : "No menus built in this session yet." };
+  const n = LOG.length, slots = LOG.reduce((a, r) => a + r.n, 0);
+  const brand = new Map(), bott = new Map(), comp = new Map(), flav = new Map(), ven = new Map(), asked = new Map();
+  for (const r of LOG) {
+    r.brands.forEach(b => inc(brand, b)); r.bottles.forEach(([k, v]) => inc(bott, k, v)); r.comp.forEach(c => inc(comp, c));
+    r.flav.forEach(f => inc(flav, f)); if (r.venue) inc(ven, r.venue); r.spirits.forEach(s => inc(asked, s));
+  }
+  const caps = LOG.map(r => r.cap).filter(c => c !== null && c !== undefined);
+  const join = (arr, f) => arr.map(f).join(", ") || "—";
+  const rows = [[fr ? "Cartes construites" : "Menus built", `${n} · ${slots} cocktails`],
+    [fr ? "Établissements" : "Venues", join(mostCommon(ven, 3), ([k, v]) => `${D.VENUE_LABEL[k][i]} (${v})`)],
+    [fr ? "Prix plafond médian" : "Median price cap", caps.length ? eur(median(caps), lang) : "—"],
+    [fr ? "Goûts demandés" : "Flavours asked", join(mostCommon(flav, 3), ([k, v]) => `${D.FLAV_LABEL[k][i]} (${v})`)],
+    [fr ? "Catégories demandées" : "Categories asked", join(mostCommon(asked, 3), ([k, v]) => `${D.SPIRIT_LABEL[k][i]} (${v})`)],
+    [fr ? "Marques à la carte" : "Brands on menus", mostCommon(brand, 4).map(([k, v]) => `${k} ${pct(v / slots)}`).join(", ")],
+    [fr ? "Part sans alcool" : "Alcohol-free share", pct(LOG.reduce((a, r) => a + r.free_share, 0) / n)],
+    [fr ? "Pour cost moyen" : "Average pour cost", pct(LOG.reduce((a, r) => a + r.avg_pc, 0) / n)],
+    [fr ? "Bouteilles / semaine (top)" : "Bottles / week (top)", mostCommon(bott, 3).map(([k, v]) => `${k} ${v}`).join(", ")]];
+  const gaps = mostCommon(comp, 3).map(([k, v]) => fr ? `Demande concurrente : ${D.COMPETITORS[k][0]} × ${v} → ${D.COMPETITORS[k][2]}`
+                                                      : `Competitor ask: ${D.COMPETITORS[k][0]} × ${v} → ${D.COMPETITORS[k][3]}`);
+  const fl = LOG.reduce((a, r) => a + r.flagged, 0);
+  if (fl) gaps.push(fr ? `${fl} cocktail(s) au-dessus de 30 % de pour cost à cause d'un prix plafond bas` : `${fl} cocktail(s) above 30% pour cost because of a low price cap`);
+  const seedNote = SEEDED ? (fr ? ` Inclut ${SEEDED} cartes de démonstration chargées à l'ouverture.` : ` Includes ${SEEDED} demo menus loaded at start.`) : "";
+  return { type: "insights", lang, rows, gaps,
+    note: (fr ? "Ce que les cartes révèlent : quelles marques y entrent, à quel prix, quelles demandes concurrentes reviennent, et le volume de bouteilles généré par compte. De quoi préparer la visite d'un commercial."
+              : "What the menus reveal: which brands make it on, at what price, which competitor requests come up, and the bottle volume each account generates. Useful prep for a sales visit.") + seedNote };
+}
+
+// ---------- chat engine ----------
+function fresh() {
+  return { log_i: null, venue: null, tier: null, cap: null, n: 8, volume: 200, target: 0.22, season: null, styles: new Set(), flav: new Set(), avoid_flav: new Set(),
+           spirits: new Set(), no_spirit: new Set(), nolow: 0.15, fast: false, comp: new Set(), removed: new Set(), offset: 0, lang: "fr", touched: false };
+}
+let STATE = fresh();
+function snap(S) {
+  return JSON.stringify(Object.keys(S).filter(k => k !== "lang" && k !== "log_i").sort().map(k => [k, S[k] instanceof Set ? [...S[k]].sort() : S[k]]));
+}
+function isNewRequest(t) {
+  if (rx("^\\s*(autre|another|encore|plus |moins |remplace|enleve|retire|replace|remove|swap|pas de|sans|no |et |and |prix|max|price|under)").test(t)) return false;
+  const sig = [Object.values(D.VENUES).some(p => rs(p, t)), !!rs("\\d+\\s*cocktails?\\b(?!\\s*(?:par|/|a|per))", t), !!rs("\\d+\\s*(?:€|eur)|max", t),
+               Object.values(D.SEASONS).some(p => rs(p, t)), !!rs("par semaine|per week|a week|par jour|per day", t), !!rs("haut de gamme|premium|etudiant|student", t)];
+  return sig.filter(Boolean).length >= 2;
+}
+function chatData(text) {
+  let S = STATE; const t = norm(text.trim());
+  if (isFrench(text)) S.lang = "fr"; else if (isEnglish(text)) S.lang = "en";
+  const L = D.TXT[S.lang], i = S.lang === "fr" ? 0 : 1;
+  if (["quit", "exit", "bye", "quitter", "au revoir"].includes(t)) return { type: "text", lang: S.lang, text: L.bye };
+  if (["reset", "restart", "recommencer", "nouvelle carte"].includes(t)) { const lang = S.lang; STATE = fresh(); STATE.lang = lang; return { type: "text", lang, text: L.reset }; }
+  if (["hi", "hello", "hey", "salut", "bonjour", "help", "aide"].includes(t)) return { type: "text", lang: S.lang, text: L.hello };
+  if (rx("^\\s*(insights?|rapport|report|stats)\\b").test(t)) {
+    if (rs("english|anglais", t)) S.lang = "en"; else if (rs("francais|french", t)) S.lang = "fr";
+    return insights(S.lang);
+  }
+  if (isNewRequest(t)) { const lang = S.lang; STATE = fresh(); STATE.lang = lang; S = STATE; }
+  const before = snap(S); parse(text, S);
+  if (before !== snap(S)) S.touched = true;
+  if (!S.touched) return { type: "text", lang: S.lang, text: L.ask };
+  const items = buildMenu(S), flagged = items.filter(it => it.pc > 0.30).length;
+  logRow(S, items, flagged);
+  const ctx = S.venue ? [D.VENUE_LABEL[S.venue][i]] : [];
+  if (S.tier) ctx.push({ premium: ["haut de gamme", "upscale"], budget: ["petit budget", "budget"] }[S.tier][i]);
+  if (S.season) ctx.push(D.SEASON_LABEL[S.season][i]);
+  ctx.push(...[...S.styles].sort().map(s => D.STYLE_LABEL[s][i]), ...[...S.flav].sort().map(f => D.FLAV_LABEL[f][i]));
+  ctx.push(...[...S.spirits].sort().map(s => D.SPIRIT_LABEL[s][i]), ...[...S.no_spirit].sort().map(s => (i === 0 ? "sans " : "no ") + D.SPIRIT_LABEL[s][i]));
+  if (S.cap) ctx.push("max " + eur(S.cap, S.lang).replace(",00", ""));
+  if (S.fast) ctx.push(i === 0 ? "service rapide" : "fast service");
+  const notes = [...S.comp].sort().map(c => fmt(L.comp, { b: D.COMPETITORS[c][0], a: D.COMPETITORS[c][2 + i] }));
+  if (flagged && S.cap) notes.push(fmt(L.over, { c: String(S.cap), n: flagged }));
+  const avgM = items.reduce((a, it) => a + it.margin, 0) / items.length;
+  return { type: "menu", lang: S.lang, items, ctx, notes,
+           summary: { pc: items.reduce((a, it) => a + it.pc, 0) / items.length, margin: avgM, week: avgM * S.volume },
+           stock: stock(items, S), assume: fmt(L.assume, { v: S.volume, t: pyRound(S.target * 100) }) };
+}
+
+// ---------- rendering (mirrors to_html in the Python script) ----------
+const pill = (txt, bg, fg) => `<span class="cap" style="background:${bg};color:${fg};padding:2px 8px;border-radius:999px;font-size:10px;white-space:nowrap">${txt}</span>`;
+function menuHtml(d, L, i) {
+  const lang = d.lang, out = [];
+  for (const n of d.notes) out.push(`<div style="background:#F3F7FC;border-left:3px solid ${C.SKY};border-radius:6px;padding:6px 10px;margin-bottom:10px;font-size:13px">${esc(n)}</div>`);
+  const chips = d.ctx.map(c => `<span style="background:${C.MIST};color:${C.NAVY};border-radius:999px;padding:2px 10px;font-size:12px;font-weight:500;margin:0 6px 6px 0;display:inline-block">${esc(c)}</span>`).join("");
+  out.push(`<div style="font-weight:700;font-size:22px;color:${C.NAVY};line-height:1.1">${L.menu}</div><div style="margin:8px 0 6px">${chips}</div>`);
+  d.items.forEach((it, k) => {
+    const tag = it.nolow === 2 ? pill(L.free, "#E3F5EE", C.GREEN) : it.nolow === 1 ? pill(L.low, "#E8F0FA", C.NAVY) : "";
+    const pcs = it.pc > 0.30 ? `color:${C.RED};font-weight:600` : `color:${C.GREY}`;
+    out.push(`<div class="row" style="--i:${k};padding:10px 0;border-bottom:1px solid ${C.LINE}">`
+      + `<div class="rowtop" style="display:flex;align-items:baseline;gap:8px"><span class="nm" style="font-weight:600;font-size:16px">${esc(it.name)}</span>${tag}`
+      + `<span class="lead" style="--i:${k};flex:1;border-bottom:2px dotted ${C.SKY};transform-origin:left;margin:0 4px;position:relative;top:-4px;min-width:12px"></span>`
+      + `<span class="cond" style="font-weight:700;font-size:21px;color:${C.NAVY};white-space:nowrap">${eur(it.price, lang)}</span></div>`
+      + `<div style="font-size:12.5px;color:${C.GREY};margin-top:1px">${esc(it.recipe)}${it.garnish ? ` · <i>${esc(it.garnish)}</i>` : ""}</div>`
+      + `<div style="font-size:11.5px;margin-top:3px;${pcs}">Pour cost ${pct(it.pc)} &nbsp;·&nbsp; ${i === 0 ? "Marge" : "Margin"} ${eur(it.margin, lang)} &nbsp;·&nbsp; ${num(pyRound(it.std, 1), lang)} ${L.std}</div></div>`);
+  });
+  const s = d.summary, base = 150 + 110 * d.items.length + 300;
+  const tile = (k, big, lab) => `<div class="kpi" style="--i:${k};--base:${base}ms;flex:1;min-width:150px;background:#F3F7FC;border-radius:10px;padding:10px 12px">`
+    + `<div class="cond" style="font-weight:700;font-size:30px;color:${C.NAVY};line-height:1">${big}</div><div style="font-size:11.5px;color:${C.GREY};margin-top:4px">${lab}</div></div>`;
+  const pcHtml = `<span class="count" style="--to:${pyRound(s.pc * 100)};--base:${base}ms"></span>%`;
+  out.push(`<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px">` + tile(0, pcHtml, L.pc) + tile(1, eur(s.margin, lang), L.margin) + tile(2, eur0(s.week, lang), L.week) + `</div>`);
+  const mx = d.stock.length ? Math.max(...d.stock.map(x => x[2])) : 1;
+  const bars = d.stock.map(([ing, cl, b, cost], k) => `<div class="stk" style="display:flex;align-items:center;gap:10px;margin:5px 0;font-size:12.5px">`
+    + `<span class="stk-n" style="width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(ing)}</span>`
+    + `<span style="flex:1;background:${C.MIST};border-radius:4px;height:12px"><span class="bar" style="--i:${k};--base:${base + 450}ms;display:block;height:12px;`
+    + `width:${(b / mx * 100).toFixed(0)}%;background:linear-gradient(90deg,${C.NAVY},${C.SKY});border-radius:4px"></span></span>`
+    + `<span style="width:96px;text-align:right;font-weight:600;white-space:nowrap">${b} ${L.bt} · ${eur0(cost, lang)}</span></div>`).join("");
+  out.push(`<div style="margin-top:16px"><div class="cap" style="color:${C.NAVY};margin-bottom:4px">${L.order}</div>${bars}</div>`);
+  out.push(`<div style="font-size:11.5px;color:${C.GREY};margin-top:10px">${esc(d.assume)}</div>`
+    + `<div style="font-size:11px;color:${C.GREY};margin-top:6px;border-top:1px solid ${C.LINE};padding-top:6px"><b>${L.health}</b> ${L.note}</div>`);
+  return out.join("");
+}
+function toHtml(d) {
+  const L = D.TXT[d.lang], i = d.lang === "fr" ? 0 : 1;
+  if (d.type === "text") return esc(d.text).replace(/\n/g, "<br>");
+  if (d.type === "insights") {
+    const rows = d.rows.map(([a, v], k) => `<div class="row" style="--i:${k};display:flex;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid ${C.LINE};gap:4px 14px">`
+      + `<span style="width:210px;color:${C.GREY};font-size:12.5px">${esc(a)}</span><span style="flex:1;min-width:200px;font-weight:600">${esc(v)}</span></div>`).join("");
+    const gaps = d.gaps.map((g, k) => `<div class="kpi" style="--i:${k};--base:${150 + 110 * d.rows.length}ms;background:#F3F7FC;border-left:3px solid ${C.NAVY};border-radius:6px;padding:7px 10px;margin-top:6px;font-size:13px">${esc(g)}</div>`).join("");
+    return `<div class="cap" style="color:${C.SKY}">Insights · trade marketing</div><div style="font-weight:700;font-size:22px;color:${C.NAVY};margin-bottom:6px">`
+      + (i === 0 ? "Ce que disent les cartes" : "What the menus say") + `</div>${rows}<div style="margin-top:10px">${gaps}</div>`
+      + `<div style="font-size:12px;color:${C.GREY};margin-top:10px">${esc(d.note)}</div>`;
+  }
+  return menuHtml(d, L, i);
+}
+function seed(list) { for (const m of list) { STATE = fresh(); chatData(m); } SEEDED = list.length; STATE = fresh(); }
+if (typeof module !== "undefined") module.exports = { chatData, toHtml, fresh, seed, get STATE() { return STATE; }, set STATE(v) { STATE = v; }, LOG };
+
+const inner = document.getElementById('inner'), logEl = document.getElementById('log'), q = document.getElementById('q');
+const AV = '<div class="av cond">LC</div>';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function add(html) { inner.querySelectorAll('.new').forEach(n => n.classList.remove('new')); inner.insertAdjacentHTML('beforeend', html); return inner.lastElementChild; }
+function scrollToEl(el) { logEl.scrollTo({top: Math.max(0, el.offsetTop - 60), behavior: 'smooth'}); }
+let busy = false;
+async function say(text) {
+  if (!text.trim() || busy) return; busy = true;
+  add(`<div class="msg-u new"><div>${esc(text)}</div></div>`);
+  const typing = add(`<div class="msg-b new">${AV}<div class="card"><div class="dots" style="padding:2px"><span></span><span></span><span></span></div></div></div>`);
+  logEl.scrollTo({top: logEl.scrollHeight, behavior: 'smooth'});
+  const d = chatData(text); await sleep(650); typing.remove();
+  const b = add(`<div class="msg-b new">${AV}<div class="card">${toHtml(d)}</div></div>`);
+  scrollToEl(b.previousElementSibling || b); busy = false;
+}
+document.getElementById('f').addEventListener('submit', e => { e.preventDefault(); const t = q.value; q.value = ''; say(t); });
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => say(c.dataset.q)));
+seed(["upscale hotel bar, 6 cocktails, classics, winter, 120 cocktails a week", "brasserie, apéro français, service rapide, 6 cocktails", "club, 10 cocktails, prix max 7 €, 600 cocktails par semaine, vodka", "dry january menu for our restaurant, 6 drinks", "bar à Lyon, 8 cocktails, prix max 10 €, on veut du Bacardi", "terrasse en été, 8 cocktails, frais, un spritz façon Aperol", "restaurant italien, 6 cocktails, apéritif, Aperol spritz demandé", "bar d'hôtel, 8 cocktails, prix max 14 €, whisky"]);
+add(`<div class="msg-b new">${AV}<div class="card">${toHtml({type:'text', lang:'fr', text: D.TXT.fr.hello})}</div></div>`);
+</script></body></html>

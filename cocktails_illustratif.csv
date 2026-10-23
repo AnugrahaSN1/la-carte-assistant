@@ -1,0 +1,36 @@
+﻿Cocktail_FR,Cocktail_EN,Recipe_cl,Flavours,Seasons,Speed,Style,NoLow,Garnish,Popularity
+Beefeater Tonic,Beefeater & Tonic,Beefeater London Dry:4;tonic:15,fresh|bitter|herbal,all|summer,1,highball,0,zeste de citron / lemon twist,3
+Monkey 47 Tonic,Monkey 47 & Tonic,Monkey 47:4;tonic:15,fresh|herbal|bitter,all|summer,1,highball,0,baies / berries,2
+Malfy Limone Tonic,Malfy Limone Tonic,Malfy Gin Con Limone:4;tonic:15,fresh|citrus,summer,1,highball,0,citron / lemon wheel,2
+Negroni Blanc,White Negroni,Plymouth Gin:3;Lillet Blanc:3;Suze:2,bitter|herbal,all|winter,2,classic,0,zeste / twist,2
+Lillet Vive,Lillet Vive,Lillet Blanc:5;tonic:10,fresh|fruity,summer,1,apero,1,"concombre, fraise / cucumber, strawberry",2
+Italicus Royal,Italicus Royale,Italicus:3;Mumm Cordon Rouge:7,citrus|fresh|sparkling,all|summer|festive,1,apero,0,olive verte / green olive,1
+Spritz Rosato,Rosato Spritz,Ramazzotti Aperitivo Rosato:5;tonic:10,fruity|fresh|bitter,summer,1,apero,1,orange,3
+Vesper,Vesper,Beefeater London Dry:4.5;Absolut Vodka:1.5;Lillet Blanc:0.75,strong|dry,all|winter,2,classic,0,zeste de citron / lemon twist,1
+Moscow Mule,Moscow Mule,Absolut Vodka:4.5;ginger beer:12;lime juice:1.5,fresh|spicy,all|summer,1,highball,0,citron vert / lime,3
+Cosmopolitan,Cosmopolitan,Absolut Citron:4;triple sec:1.5;cranberry juice:3;lime juice:1.5,fruity|citrus,all|festive,2,classic,0,zeste d'orange / orange twist,2
+Espresso Martini,Espresso Martini,Absolut Vodka:5;espresso:3;sugar syrup:1.5,coffee|sweet,all|winter,2,classic,0,grains de café / coffee beans,3
+Mojito,Mojito,Havana Club 3 Años:5;lime juice:2.5;sugar syrup:2;soda:6,fresh|citrus|sweet,summer|all,3,classic,0,menthe / mint,3
+Daiquiri,Daiquiri,Havana Club 3 Años:5;lime juice:2.5;sugar syrup:1.5,citrus|fresh,summer|all,2,classic,0,citron vert / lime,2
+Cuba Libre,Cuba Libre,Havana Club 3 Años:5;cola:12;lime juice:1,sweet|fresh,all,1,highball,0,citron vert / lime,2
+Piña Colada,Piña Colada,Havana Club 3 Años:4;Malibu:2;pineapple juice:9;coconut cream:3,tropical|sweet,summer,2,classic,0,ananas / pineapple,3
+Malibu Ananas,Malibu Pineapple,Malibu:4;pineapple juice:12,tropical|sweet,summer,1,highball,1,ananas / pineapple,2
+Old Fashioned Havana 7,Havana 7 Old Fashioned,Havana Club 7 Años:5;sugar syrup:0.5;aromatic bitters:0.2,strong|sweet,all|winter,2,classic,0,zeste d'orange / orange twist,2
+Jameson Ginger & Lime,Jameson Ginger & Lime,Jameson:4;ginger ale:12;lime juice:1,fresh|spicy,all,1,highball,0,citron vert / lime,2
+Irish Coffee,Irish Coffee,Jameson:4;hot coffee:12;sugar syrup:1.5;cream:3,coffee|sweet|warm,winter|festive,2,classic,0,crème / cream,2
+Whisky Sour Chivas,Chivas Whisky Sour,Chivas Regal 12:5;lemon juice:2.5;sugar syrup:1.5;aquafaba:2,citrus|smooth,all,2,classic,0,cerise / cherry,2
+Glenlivet Highball,Glenlivet Highball,The Glenlivet 12:4;soda:12,fresh|smooth,all,1,highball,0,zeste / twist,1
+Penicillin Chivas,Chivas Penicillin,Chivas Regal 12:5;lemon juice:2.5;honey-ginger syrup:2,spicy|citrus|smooth,winter|all,2,classic,0,gingembre confit / candied ginger,2
+Sidecar Martell,Martell Sidecar,Martell VS:4.5;triple sec:2;lemon juice:2,citrus|strong,all|festive,2,classic,0,bord sucré / sugar rim,1
+Martell Tonic,Martell & Tonic,Martell VS:4;tonic:12,fresh|smooth,all|summer,1,highball,0,orange,1
+Mauresque,Mauresque,Ricard:2;orgeat syrup:1;water:10,anise|fresh|sweet,summer|all,1,french,1,glaçons / ice,2
+Tomate,Ricard Tomate,Ricard:2;grenadine syrup:1;water:10,anise|sweet,summer|all,1,french,1,glaçons / ice,1
+Margarita Altos,Altos Margarita,Olmeca Altos Plata:5;triple sec:2;lime juice:2.5,citrus|fresh,summer|all,2,classic,0,bord salé / salt rim,3
+Paloma,Paloma,Olmeca Altos Plata:5;grapefruit soda:12;lime juice:1,fresh|citrus|bitter,summer,1,highball,0,pamplemousse / grapefruit,2
+Kir Royal Mumm,Mumm Kir Royale,Mumm Cordon Rouge:8;crème de cassis:1,fruity|sparkling,festive|all,1,french,0,,2
+Suze Tonic,Suze & Tonic,Suze:4;tonic:12,bitter|fresh|herbal,summer|all,1,apero,1,pamplemousse / grapefruit,1
+Virgin Mojito,Virgin Mojito,lime juice:2.5;sugar syrup:2;soda:12,fresh|citrus,summer|all,2,no-alcohol,2,menthe / mint,3
+Garden Tonic (sans alcool),Garden Tonic (alcohol-free),tonic:15;rosemary syrup:1;lime juice:0.5,fresh|herbal|bitter,all|summer,1,no-alcohol,2,"romarin, concombre / rosemary, cucumber",2
+Virgin Colada,Virgin Colada,pineapple juice:12;coconut cream:4;lime juice:1,tropical|sweet,summer,2,no-alcohol,2,ananas / pineapple,2
+Café Tonic,Espresso Tonic,espresso:3;tonic:12,coffee|bitter|fresh,all|summer,1,no-alcohol,2,orange,1
+Ginger Lime Fizz,Ginger Lime Fizz,ginger beer:12;lime juice:2;honey-ginger syrup:1,spicy|fresh,all|winter,1,no-alcohol,2,citron vert / lime,2
