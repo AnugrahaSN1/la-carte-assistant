@@ -3,7 +3,7 @@
 **A cocktail-menu assistant for bars and restaurants, built on the Pernod Ricard portfolio.**
 Describe the venue in one sentence, in French or English, and get a costed menu: price, pour cost, margin per serve, alcohol per serve, and the weekly bottle order.
 
-### ▶ [Try it live in your browser](https://anugrahasn1.github.io/la-carte-assistant/index.html/)
+### ▶ [Try it live in your browser](https://anugrahasn1.github.io/la-carte-assistant/index.html)
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anugrahasn1/la-carte-assistant/blob/main/La_Carte.ipynb)
 
